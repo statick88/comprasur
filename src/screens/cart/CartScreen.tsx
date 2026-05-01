@@ -39,7 +39,7 @@ export default function CartScreen({ navigation }: Props) {
                   price={item.price}
                   quantity={item.quantity}
                   subtotal={item.price * item.quantity}
-                  image={getProductImage(item.id)}
+                  image={getProductImage(item)}
                   onIncrease={() => increaseItem(item.id)}
                   onDecrease={() => decreaseItem(item.id)}
                   onRemove={() => removeItem(item.id)}

@@ -9,7 +9,7 @@ Aplicación móvil para la gestión y compra de insumos médicos, construida con
 | Herramienta | Versión mínima |
 |-------------|---------------|
 | Node.js | 20+ |
-| Docker & Docker Compose | cualquier versión reciente |
+| Docker / Colima + Docker Compose | cualquier versión reciente |
 | Expo Go (dispositivo) | última versión en App Store / Play Store |
 | Git | cualquier versión |
 
@@ -21,7 +21,7 @@ Aplicación móvil para la gestión y compra de insumos médicos, construida con
 
 ```bash
 git clone https://github.com/statick88/comprasur.git
-cd comprasur
+cd Comprasur
 ```
 
 ### 2. Configurar variables de entorno
@@ -50,12 +50,14 @@ El archivo `backend/.env` ya tiene valores por defecto para desarrollo local. So
 ### 3. Levantar el backend
 
 ```bash
+colima start                # Solo si usas Colima
+docker compose up -d        # Levanta PostgreSQL + API desde la raíz
 cd backend
-docker-compose up -d        # Levanta PostgreSQL
 npm install
 npm run db:init             # Crea tablas y carga datos de prueba
-npm start                   # Inicia la API en http://localhost:3000
 ```
+
+> Si ya levantaste el servicio `api` con `docker compose up -d`, no necesitas ejecutar `npm start` localmente.
 
 Verifica que el backend esté corriendo:
 ```bash
@@ -106,8 +108,8 @@ comprasur/
 │   │   ├── index.js           # Servidor Express
 │   │   ├── routes/            # Rutas de productos y órdenes
 │   │   └── db/init.js         # Inicialización de base de datos
-│   ├── docker-compose.yml
 │   └── .env.example
+├── docker-compose.yml       # PostgreSQL + API para desarrollo local
 └── specs/
     ├── app.spec.ts            # Configuración de la app
     └── app.spec.test.ts       # Tests de configuración
@@ -138,19 +140,22 @@ cd backend && npm test
 
 ---
 
-## 🐳 Docker Compose (solo base de datos)
+## 🐳 Docker Compose (API + base de datos)
 
-El `docker-compose.yml` en `/backend` levanta únicamente PostgreSQL:
+El `docker-compose.yml` en la **raíz del proyecto** es compatible con Docker y Colima, y levanta PostgreSQL + API:
 
 ```yaml
-# Levanta PostgreSQL en localhost:5432
-docker-compose up -d
+# Si usas Colima
+colima start
+
+# Levanta PostgreSQL en localhost:5432 y la API en localhost:3000
+docker compose up -d
 
 # Detener
-docker-compose down
+docker compose down
 
 # Detener y eliminar datos
-docker-compose down -v
+docker compose down -v
 ```
 
 ---

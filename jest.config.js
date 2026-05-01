@@ -1,5 +1,6 @@
 module.exports = {
   preset: 'react-native',
+  testRegex: '(/__tests__/.*|(\\.|/)(test))\\.(js|jsx|ts|tsx)$',
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },

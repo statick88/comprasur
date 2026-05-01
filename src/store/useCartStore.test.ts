@@ -23,6 +23,7 @@ describe('useCartStore', () => {
     name: 'Guantes',
     price: 15,
     description: 'Desc',
+    imageAlt: 'Guantes',
     imageKey: 'medical',
     colors: {
       primary: '#000',

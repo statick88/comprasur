@@ -5,15 +5,18 @@ import { theme } from '../theme';
 type Props = {
   text: string;
   isUser: boolean;
-  timestamp: Date;
+  timestamp: Date | string;
 };
 
 export default function MessageBubble({ text, isUser, timestamp }: Props) {
+  const timeValue = timestamp instanceof Date ? timestamp : new Date(timestamp);
+  const safeTime = Number.isNaN(timeValue.getTime()) ? '--:--' : timeValue.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
   return (
     <View style={[styles.bubble, isUser ? styles.bubbleUser : styles.bubbleOther]}>
       <Text style={[styles.message, isUser ? styles.messageUser : styles.messageOther]}>{text}</Text>
       <Text style={[styles.time, isUser ? styles.timeUser : styles.timeOther]}>
-        {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        {safeTime}
       </Text>
     </View>
   );
@@ -59,4 +62,3 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
 });
-

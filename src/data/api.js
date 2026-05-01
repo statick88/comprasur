@@ -65,7 +65,7 @@ export async function fetchOrders() {
 
 // Create PayPal order
 export async function createPayPalOrder({ user_name, user_location, items }) {
-  return request('/api/paypal/orders', {
+  return request('/api/orders/paypal', {
     method: 'POST',
     body: JSON.stringify({ user_name, user_location, items }),
   });
@@ -73,7 +73,7 @@ export async function createPayPalOrder({ user_name, user_location, items }) {
 
 // Capture PayPal order
 export async function capturePayPalOrder(paypalOrderId) {
-  return request(`/api/paypal/orders/${paypalOrderId}/capture`, {
+  return request(`/api/orders/paypal/${paypalOrderId}/capture`, {
     method: 'POST',
   });
 }
