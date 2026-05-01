@@ -1,5 +1,5 @@
 // src/data/api.js - API Client for Comprasur
-const API_URL = 'http://192.168.0.106:3000';
+import { API_URL } from './config';
 
 // Fetch all products
 export async function fetchProducts() {

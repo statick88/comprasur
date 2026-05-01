@@ -34,3 +34,15 @@ describe('Product Routes', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 });
+
+describe('Order Validation', () => {
+  it('should return 400 for invalid order data', async () => {
+    const res = await request(app)
+      .post('/api/orders')
+      .send({ user_name: 'Di', items: [] }); // Name too short, no items
+    
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Validation failed');
+    expect(res.body.details).toBeDefined();
+  });
+});
