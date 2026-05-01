@@ -1,68 +1,79 @@
 // src/data/api.js - API Client for Comprasur
 import { API_URL } from './config';
 
+/**
+ * Generic API wrapper for better error handling and centralized logging
+ */
+async function request(endpoint, options = {}) {
+  const url = `${API_URL}${endpoint}`;
+  const defaultHeaders = {
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    console.log(`[API] Request: ${options.method || 'GET'} ${url}`);
+    const response = await fetch(url, {
+      ...options,
+      headers: { ...defaultHeaders, ...options.headers },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const errorMessage = data?.error || data?.message || `HTTP Error ${response.status}`;
+      console.error(`[API] Error ${response.status}: ${errorMessage}`);
+      throw new Error(errorMessage);
+    }
+
+    return data;
+  } catch (error) {
+    if (error.message === 'Network request failed') {
+      console.error('[API] Network Error: Please check your connection or API_URL.');
+      throw new Error('No se pudo conectar con el servidor. Verifica tu conexión.');
+    }
+    throw error;
+  }
+}
+
 // Fetch all products
 export async function fetchProducts() {
-  const res = await fetch(`${API_URL}/api/products`);
-  if (!res.ok) throw new Error('Failed to fetch products');
-  return res.json();
+  return request('/api/products');
 }
 
 // Search products
 export async function searchProducts(query) {
-  const res = await fetch(`${API_URL}/api/products/search?q=${encodeURIComponent(query)}`);
-  if (!res.ok) throw new Error('Failed to search products');
-  return res.json();
+  return request(`/api/products/search?q=${encodeURIComponent(query)}`);
 }
 
 // Get single product
 export async function fetchProduct(id) {
-  const res = await fetch(`${API_URL}/api/products/${id}`);
-  if (!res.ok) throw new Error('Product not found');
-  return res.json();
+  return request(`/api/products/${id}`);
 }
 
 // Create order
 export async function createOrder({ user_name, user_location, items }) {
-  const res = await fetch(`${API_URL}/api/orders`, {
+  return request('/api/orders', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ user_name, user_location, items }),
   });
-  if (!res.ok) throw new Error('Failed to create order');
-  return res.json();
 }
 
 // Get all orders (for admin/testing)
 export async function fetchOrders() {
-  const res = await fetch(`${API_URL}/api/orders`);
-  if (!res.ok) throw new Error('Failed to fetch orders');
-  return res.json();
+  return request('/api/orders');
 }
 
 // Create PayPal order
 export async function createPayPalOrder({ user_name, user_location, items }) {
-  const res = await fetch(`${API_URL}/api/paypal/orders`, {
+  return request('/api/paypal/orders', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ user_name, user_location, items }),
   });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error?.message || 'Failed to create PayPal order');
-  }
-  return res.json();
 }
 
 // Capture PayPal order
 export async function capturePayPalOrder(paypalOrderId) {
-  const res = await fetch(`${API_URL}/api/paypal/orders/${paypalOrderId}/capture`, {
+  return request(`/api/paypal/orders/${paypalOrderId}/capture`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
   });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error?.message || 'Failed to capture PayPal order');
-  }
-  return res.json();
 }
