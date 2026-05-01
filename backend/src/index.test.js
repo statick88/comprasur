@@ -23,6 +23,11 @@ vi.mock('pg', () => {
 });
 
 // Mock node-fetch for PayPal API calls
+import fetch from 'node-fetch';
+vi.mock('node-fetch', () => ({
+  default: vi.fn()
+}));
+const nodeFetchMock = vi.mocked(fetch);
 
 
 function createMockResponse() {
