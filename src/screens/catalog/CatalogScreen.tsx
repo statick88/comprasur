@@ -36,20 +36,34 @@ type CatalogProduct = Product & { category: string; stock: number };
 
 function transformProduct(apiProduct: any, index: number): CatalogProduct {
   const fallbackCategories = ['Protección', 'Protección', 'Inyección', 'Quirúrgico', 'Curación', 'Hospitalario'];
+  const fallbackColors = [
+    { primary: '#2B6CB0', background: '#EBF8FF', text: '#1A365D', accent: '#BEE3F8' },
+    { primary: '#276749', background: '#F0FFF4', text: '#1C4532', accent: '#C6F6D5' },
+    { primary: '#C05621', background: '#FFFAF0', text: '#7B341E', accent: '#FEEBC8' },
+    { primary: '#702459', background: '#FFF5F7', text: '#521B41', accent: '#FED7E2' },
+    { primary: '#D69E2E', background: '#FFFFF0', text: '#744210', accent: '#FEFCBF' },
+    { primary: '#553C9A', background: '#FAF5FF', text: '#322659', accent: '#E9D8FD' },
+  ];
+  const imageKeys = ['guantes_nitrilo', 'mascarilla_n95', 'jeringa_10ml', 'bisturi_quirurgico', 'vendaje_elastico', 'cateter_intravenoso'];
+  const imageAlts = [
+    'Guantes desechables clínicos',
+    'Mascarilla de protección respiratoria',
+    'Jeringa desechable de precisión',
+    'Instrumento de corte estéril',
+    'Rollo de vendaje adaptable',
+    'Catéter flexible médico',
+  ];
+
   return {
     id: apiProduct.id,
     name: apiProduct.name,
     price: Number.parseFloat(apiProduct.price),
     description: apiProduct.description,
-    imageKey: 'medical',
+    imageKey: imageKeys[index % imageKeys.length],
+    imageAlt: imageAlts[index % imageAlts.length],
     category: fallbackCategories[index % fallbackCategories.length],
     stock: Math.max(20 - index * 2, 1),
-    colors: {
-      primary: '#0077B6',
-      background: '#CAF0F8',
-      text: '#03045E',
-      accent: '#90E0EF',
-    },
+    colors: fallbackColors[index % fallbackColors.length],
   };
 }
 
@@ -148,11 +162,12 @@ export default function CatalogScreen({ navigation }: Props) {
             renderItem={({ item }) => (
               <View style={styles.cardWrap}>
                 <ProductCard
-                  image={getProductImage(item.id)}
+                  image={getProductImage(item)}
                   name={item.name}
                   price={item.price}
                   description={item.description}
                   category={item.category}
+                  accessibilityLabel={item.imageAlt}
                   inStock={item.stock > 0}
                   favorite={!!favorites[item.id]}
                   onToggleFavorite={() =>

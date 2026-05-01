@@ -31,14 +31,19 @@ export default function ProductInfoScreen({ navigation, route }: Props) {
       ),
     [product.colors]
   );
-  const image = getProductImage(product.id);
+  const image = getProductImage(product);
 
   return (
     <SafeAreaView style={styles.container}>
       <AppHeader title="Detalle de producto" subtitle="Información y compra" onBackPress={navigation.goBack} />
       <ScrollView contentContainerStyle={styles.content}>
         {image ? (
-          <Image source={image} style={styles.image} resizeMode="cover" />
+          <Image 
+            source={image} 
+            style={styles.image} 
+            resizeMode="cover" 
+            accessibilityLabel={product.imageAlt}
+          />
         ) : (
           <View style={styles.imageFallback}>
             <MaterialCommunityIcons name="medical-bag" size={70} color={theme.colors.blueDeep} />

@@ -1,0 +1,19 @@
+Starting project at /Users/statick/dev/Development/Comprasur
+Starting Metro Bundler
+Unable to run simctl:
+Error: xcrun simctl help exited with non-zero code: 72
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+The following packages should be updated for best compatibility with the installed expo version:
+  @react-native-async-storage/async-storage@3.0.2 - expected version: 2.1.2
+  jest@30.3.0 - expected version: ~29.7.0
+  jest-expo@55.0.16 - expected version: ~53.0.14
+Your project may not work correctly until you install the expected versions of the packages.
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundling failed 2735ms index.js (1098 modules)
+ ERROR  assets/images/foto_perfil.png: Empty file
+Android Bundling failed 143ms index.js (942 modules)
+ ERROR  assets/images/foto_perfil.png: Empty file
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 379ms index.js (1098 modules)

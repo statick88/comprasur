@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../theme';
 
+import { IMAGES } from '../data/mockData';
+
 type Props = {
   name: string;
   email?: string;
@@ -11,10 +13,21 @@ type Props = {
 };
 
 export default function ProfileCard({ name, email, avatarUrl, location }: Props) {
+  const getAvatarSource = () => {
+    if (!avatarUrl) return null;
+    if (avatarUrl.includes('http')) return { uri: avatarUrl };
+    
+    // Check if it's a local key
+    const key = avatarUrl.split('.')[0] as keyof typeof IMAGES;
+    return IMAGES[key] || null;
+  };
+
+  const source = getAvatarSource();
+
   return (
     <View style={styles.card}>
-      {avatarUrl ? (
-        <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+      {source ? (
+        <Image source={source} style={styles.avatar} />
       ) : (
         <View style={styles.avatarFallback}>
           <MaterialCommunityIcons name="account" size={30} color={theme.colors.blueDeep} />

@@ -7,6 +7,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AppNavigator from './src/navigation/AppNavigator';
 import { theme } from './src/theme';
 
+// Polyfills for testing globals leaked by libraries
+if (typeof global.describe === 'undefined') {
+  (global as any).describe = () => {};
+}
+if (typeof global.test === 'undefined') {
+  (global as any).test = () => {};
+}
+
 // ─── Loading inicial ───
 function AppLoader() {
   return (

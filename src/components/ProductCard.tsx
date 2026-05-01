@@ -11,6 +11,7 @@ type Props = {
   category?: string;
   favorite?: boolean;
   inStock?: boolean;
+  accessibilityLabel?: string;
   onPress: () => void;
   onQuickAction?: () => void;
   onToggleFavorite?: () => void;
@@ -24,6 +25,7 @@ export default function ProductCard({
   category,
   favorite = false,
   inStock = true,
+  accessibilityLabel,
   onPress,
   onQuickAction,
   onToggleFavorite,
@@ -34,7 +36,12 @@ export default function ProductCard({
       onPress={onPress}
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
       {image ? (
-        <Image source={image} style={styles.image} resizeMode="cover" />
+        <Image 
+          source={image} 
+          style={styles.image} 
+          resizeMode="cover" 
+          accessibilityLabel={accessibilityLabel || name}
+        />
       ) : (
         <View style={[styles.image, styles.imagePlaceholder]}>
           <MaterialCommunityIcons name="medical-bag" size={34} color={theme.colors.blue} />
