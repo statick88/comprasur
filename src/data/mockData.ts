@@ -1,8 +1,6 @@
 // src/data/mockData.ts
-// Datos mockeados — Catálogo de productos médicos Comprasur
 import { ImageRequireSource } from 'react-native';
 
-// Mapeo de imágenes - usar require() para Expo
 export const IMAGES = {
   guantes_nitrilo: require('../../assets/images/guantes_nitrilo.png'),
   mascarilla_n95: require('../../assets/images/mascarilla_n95.png'),
@@ -25,14 +23,13 @@ export type Product = {
   name: string;
   price: number;
   description: string;
-  imageAlt: string; // Descripción visual para accesibilidad
+  imageAlt: string;
   colors: ProductColor;
   imageKey: string;
   category?: string;
   stock?: number;
 };
 
-// Función helper para obtener imagen con fallback a placeholder de color
 export function getProductImage(product: Product): any {
   try {
     const key = product.imageKey as keyof typeof IMAGES;
@@ -59,7 +56,7 @@ export const PRODUCTS: Product[] = [
     name: 'Guantes de Nitrilo',
     price: 15,
     description: 'Guantes desechables de alta resistencia para procedimientos clínicos.',
-    imageAlt: 'Guantes desechables clínicos (Colores predominantes: tonos azules #2B6CB0)',
+    imageAlt: 'Guantes desechables clínicos',
     imageKey: 'guantes_nitrilo',
     category: 'Protección',
     stock: 120,
@@ -75,7 +72,7 @@ export const PRODUCTS: Product[] = [
     name: 'Mascarilla N95',
     price: 25,
     description: 'Mascarilla de protección respiratoria con filtro de partículas.',
-    imageAlt: 'Mascarilla de protección respiratoria (Colores predominantes: tonos verdes #276749)',
+    imageAlt: 'Mascarilla de protección respiratoria',
     imageKey: 'mascarilla_n95',
     category: 'Protección',
     stock: 84,
@@ -91,7 +88,7 @@ export const PRODUCTS: Product[] = [
     name: 'Jeringa 10ml',
     price: 5,
     description: 'Jeringa desechable de precisión con émbolo suave.',
-    imageAlt: 'Jeringa desechable de precisión (Colores predominantes: tonos naranjas #C05621)',
+    imageAlt: 'Jeringa desechable de precisión',
     imageKey: 'jeringa_10ml',
     category: 'Inyección',
     stock: 210,
@@ -107,7 +104,7 @@ export const PRODUCTS: Product[] = [
     name: 'Bisturí Quirúrgico',
     price: 12,
     description: 'Instrumento de corte estéril con mango ergonómico.',
-    imageAlt: 'Instrumento de corte estéril (Colores predominantes: tonos púrpuras #702459)',
+    imageAlt: 'Instrumento de corte estéril',
     imageKey: 'bisturi_quirurgico',
     category: 'Quirúrgico',
     stock: 43,
@@ -123,7 +120,7 @@ export const PRODUCTS: Product[] = [
     name: 'Vendaje Elástico',
     price: 8,
     description: 'Vendaje adaptable para inmovilización y compresión muscular.',
-    imageAlt: 'Rollo de vendaje adaptable (Colores predominantes: tonos dorados/mostaza #D69E2E)',
+    imageAlt: 'Rollo de vendaje adaptable',
     imageKey: 'vendaje_elastico',
     category: 'Curación',
     stock: 156,
@@ -139,7 +136,7 @@ export const PRODUCTS: Product[] = [
     name: 'Catéter Intravenoso',
     price: 18,
     description: 'Catéter flexible para administración de fluidos y medicamentos.',
-    imageAlt: 'Catéter flexible médico (Colores predominantes: tonos violetas oscuros #553C9A)',
+    imageAlt: 'Catéter flexible médico',
     imageKey: 'cateter_intravenoso',
     category: 'Hospitalario',
     stock: 68,
@@ -155,5 +152,5 @@ export const PRODUCTS: Product[] = [
 export const MOCK_USER = {
   name: 'Diego Medardo Saavedra García',
   location: 'Quito, Pichincha, Ecuador',
-  avatar_url: 'foto_perfil.png', // Referencia al asset local
+  avatar_url: 'foto_perfil.png',
 };

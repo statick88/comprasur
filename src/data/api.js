@@ -65,6 +65,17 @@ export async function fetchOrders() {
 
 // Create PayPal order
 export async function createPayPalOrder({ user_name, user_location, items }) {
+  const order = await request('/api/orders/paypal', {
+    method: 'POST',
+    body: JSON.stringify({ user_name, user_location, items })
+  });
+
+  if (order.status !== 'CREATED') {
+    throw new Error('Failed to create PayPal order');
+  }
+
+  return order;
+} {
   return request('/api/orders/paypal', {
     method: 'POST',
     body: JSON.stringify({ user_name, user_location, items }),
@@ -72,8 +83,20 @@ export async function createPayPalOrder({ user_name, user_location, items }) {
 }
 
 // Capture PayPal order
-export async function capturePayPalOrder(paypalOrderId) {
-  return request(`/api/orders/paypal/${paypalOrderId}/capture`, {
+export async function capturePayPalOrder(paypalOrderId, orderId) {
+  const capture = await request(`/api/orders/paypal/${paypalOrderId}/capture`, {
     method: 'POST',
   });
+
+  if (capture.status !== 'COMPLETED') {
+    throw new Error('Failed to complete PayPal payment');
+  }
+
+  // Store the completed order
+  await request(`/api/orders/${orderId}/paypal-complete`, {
+    method: 'POST',
+    body: JSON.stringify({ capture })
+  });
+
+  return capture;
 }

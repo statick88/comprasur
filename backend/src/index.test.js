@@ -22,6 +22,9 @@ vi.mock('pg', () => {
   return { Pool, default: { Pool } };
 });
 
+// Mock node-fetch for PayPal API calls
+
+
 function createMockResponse() {
   let statusCode = 200;
   let jsonBody;
@@ -72,7 +75,6 @@ describe('API wiring', () => {
 describe('Product controller', () => {
   beforeEach(() => {
     vi.resetModules();
-    poolQuery.mockReset();
   });
 
   it('returns products from the database', async () => {
@@ -118,9 +120,10 @@ describe('Order validation middleware', () => {
 describe('Order controller', () => {
   beforeEach(() => {
     vi.resetModules();
-    poolConnect.mockClear();
-    clientQuery.mockReset();
-    clientRelease.mockReset();
+    vi.resetAllMocks();
+    process.env.PAYPAL_ENVIRONMENT = 'sandbox';
+    process.env.PAYPAL_CLIENT_ID = 'test-client-id';
+    process.env.PAYPAL_CLIENT_SECRET = 'test-client-secret';
   });
 
   it('creates a local order and persists its items', async () => {
@@ -162,5 +165,103 @@ describe('Order controller', () => {
       total: 30,
       status: 'pending',
     });
+  });
+
+  it('creates a PayPal order and stores paypal_order_id', async () => {
+    // Mock PayPal token request
+    const tokenResponse = { access_token: 'test-token' };
+    const ppOrderResponse = {
+      id: 'PAYPAL-ORDER-123',
+      status: 'CREATED',
+      links: [{ rel: 'approve', href: 'https://paypal.com/approve' }],
+    };
+    // Mock fetch sequence
+    nodeFetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => tokenResponse }) // token
+      .mockResolvedValueOnce({ ok: true, json: async () => ppOrderResponse }); // create order
+
+    clientQuery
+      .mockResolvedValueOnce(undefined) // BEGIN
+      .mockResolvedValueOnce({ rows: [{ id: 8 }] }) // insert order
+      .mockResolvedValueOnce(undefined) // insert item
+      .mockResolvedValueOnce(undefined) // update orders with paypal_order_id
+      .mockResolvedValueOnce(undefined); // COMMIT
+
+    const { createPayPalOrder } = await import('./controllers/orderController.js');
+    const req = {
+      body: {
+        user_name: 'Diego',
+        user_location: 'Quito',
+        items: [{ id: 1, name: 'Guantes', price: 15, quantity: 2 }],
+      },
+    };
+    const res = createMockResponse();
+
+    await createPayPalOrder(req, res);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody).toMatchObject({
+      db_order_id: 8,
+      paypal_order_id: 'PAYPAL-ORDER-123',
+      status: 'CREATED',
+      approve_url: 'https://paypal.com/approve',
+    });
+  });
+
+  it('captures a completed PayPal order and updates order status', async () => {
+    const tokenResponse = { access_token: 'test-token' };
+    const captureResponse = {
+      status: 'COMPLETED',
+      id: 'CAPTURE-456',
+      purchase_units: [{ reference_id: '8', payments: { captures: [{ id: 'CAPTURE-456' }] } }],
+    };
+    nodeFetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => tokenResponse }) // token
+      .mockResolvedValueOnce({ ok: true, json: async () => captureResponse }); // capture
+
+    poolQuery.mockResolvedValueOnce({ rowCount: 1 }); // UPDATE orders
+
+    const { capturePayPalOrder } = await import('./controllers/orderController.js');
+    const req = { params: { orderID: 'PAYPAL-ORDER-123' } };
+    const res = createMockResponse();
+
+    await capturePayPalOrder(req, res);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.status).toBe('COMPLETED');
+    expect(poolQuery).toHaveBeenCalledWith(
+      "UPDATE orders SET status = 'completed', paypal_capture_id = $1 WHERE id = $2",
+      ['CAPTURE-456', '8']
+    );
+  });
+
+  it('handles PayPal API errors during order creation', async () => {
+    const tokenResponse = { access_token: 'test-token' };
+    const errorResponse = { name: 'UNPROCESSABLE_ENTITY', details: [] };
+    
+    nodeFetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => tokenResponse }) // token
+      .mockResolvedValueOnce({ ok: false, json: async () => errorResponse }); // error
+
+    clientQuery
+      .mockResolvedValueOnce(undefined) // BEGIN
+      .mockResolvedValueOnce({ rows: [{ id: 9 }] }) // insert order
+      .mockResolvedValueOnce(undefined) // insert item
+      .mockResolvedValueOnce(undefined); // ROLLBACK
+
+    const { createPayPalOrder } = await import('./controllers/orderController.js');
+    const req = {
+      body: {
+        user_name: 'Diego',
+        user_location: 'Quito',
+        items: [{ id: 1, name: 'Guantes', price: 15, quantity: 2 }],
+      },
+    };
+    const res = createMockResponse();
+
+    await createPayPalOrder(req, res);
+
+    expect(res.statusCode).toBe(400);
+    expect(res.jsonBody.error).toBe(errorResponse);
   });
 });
