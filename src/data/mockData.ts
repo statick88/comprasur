@@ -37,16 +37,20 @@ export function getProductImage(product: Product): any {
   try {
     const key = product.imageKey as keyof typeof IMAGES;
     if (IMAGES[key]) return IMAGES[key];
-    throw new Error('Image not found');
+    throw new Error('not found');
   } catch {
-    // Fallback: Placeholder con el color primario del producto
     const color = product.colors.primary.replace('#', '');
     return { uri: `https://via.placeholder.com/400/${color}/FFFFFF?text=${encodeURIComponent(product.name)}` };
   }
 }
 
-export function getProfileImage(): any | undefined {
-  return IMAGES.foto_perfil;
+export function getProfileImage(): any {
+  try {
+    if (IMAGES.foto_perfil) return IMAGES.foto_perfil;
+    throw new Error('not found');
+  } catch {
+    return { uri: 'https://via.placeholder.com/200/2B6CB0/FFFFFF?text=Perfil' };
+  }
 }
 
 export const PRODUCTS: Product[] = [
