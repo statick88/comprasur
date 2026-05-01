@@ -1,0 +1,12 @@
+{
+  "user_name": "Test User",
+  "user_location": "Quito",
+  "items": [
+    {
+      "id": 1,
+      "name": "Guantes de Nitrilo",
+      "price": 15,
+      "quantity": 1
+    }
+  ]
+}
