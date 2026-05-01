@@ -18,9 +18,22 @@ describe('useCartStore', () => {
     useCartStore.getState().clearCart();
   });
 
+  const mockProduct = {
+    id: 1,
+    name: 'Guantes',
+    price: 15,
+    description: 'Desc',
+    imageKey: 'medical',
+    colors: {
+      primary: '#000',
+      background: '#fff',
+      text: '#000',
+      accent: '#ccc',
+    },
+  };
+
   it('should add an item to the cart', () => {
-    const product = { id: 1, name: 'Guantes', price: 15, description: 'Desc', colors: [] };
-    useCartStore.getState().addItem(product);
+    useCartStore.getState().addItem(mockProduct);
     
     const items = useCartStore.getState().items;
     expect(items.length).toBe(1);
@@ -29,9 +42,8 @@ describe('useCartStore', () => {
   });
 
   it('should increase quantity if adding the same item', () => {
-    const product = { id: 1, name: 'Guantes', price: 15, description: 'Desc', colors: [] };
-    useCartStore.getState().addItem(product);
-    useCartStore.getState().addItem(product);
+    useCartStore.getState().addItem(mockProduct);
+    useCartStore.getState().addItem(mockProduct);
     
     const items = useCartStore.getState().items;
     expect(items.length).toBe(1);
@@ -39,8 +51,7 @@ describe('useCartStore', () => {
   });
 
   it('should remove an item from the cart', () => {
-    const product = { id: 1, name: 'Guantes', price: 15, description: 'Desc', colors: [] };
-    useCartStore.getState().addItem(product);
+    useCartStore.getState().addItem(mockProduct);
     useCartStore.getState().removeItem(1);
     
     const items = useCartStore.getState().items;

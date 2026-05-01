@@ -17,7 +17,7 @@ export default function ErrorState({
       <MaterialCommunityIcons 
         name="alert-circle-outline" 
         size={48} 
-        color={theme.colors.danger} 
+        color={theme.colors.error} 
       />
       <Text style={styles.message}>{message}</Text>
       {onRetry && (

@@ -19,6 +19,7 @@ import {
   AppHeader,
   CategoryChip,
   EmptyState,
+  ErrorState,
   LoadingState,
   ProductCard,
   SectionTitle,

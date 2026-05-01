@@ -24,3 +24,8 @@ export const AppSpec = {
   },
 } as const;
 
+describe('AppSpec Configuration', () => {
+  it('should have valid auth config', () => {
+    expect(AppSpec.auth).toBeDefined();
+  });
+});
