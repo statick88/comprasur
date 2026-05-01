@@ -1,0 +1,48 @@
+# docker-compose.yml - Comprasur Backend + Database
+# 
+# Usage: docker-compose up -d
+# API: http://localhost:3000
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: comprasur-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: comprasur
+      POSTGRES_PASSWORD: comprasur123
+      POSTGRES_DB: comprasur
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U comprasur"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: comprasur-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://comprasur:comprasur123@postgres:5432/comprasur
+      NODE_ENV: development
+      PORT: 3000
+      # PayPal Sandbox
+      PAYPAL_ENVIRONMENT: ${PAYPAL_ENVIRONMENT:-sandbox}
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
