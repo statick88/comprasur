@@ -103,14 +103,39 @@ export default function LoginScreen() {
 
     try {
       setLoading(true);
-      const name = email.split('@')[0] || 'Usuario';
-      setUser({
-        name,
-        email: email.trim().toLowerCase(),
-        location: 'Quito, Pichincha, Ecuador',
-      });
-    } catch {
-      Alert.alert('Error', 'No se pudo procesar el acceso');
+      if (mode === 'register') {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: email.trim().toLowerCase(),
+          password,
+          options: {
+            data: {
+              full_name: email.split('@')[0],
+            },
+          },
+        });
+        if (signUpError) throw signUpError;
+        if (data.user) {
+          Alert.alert('Registro exitoso', 'Por favor verifica tu correo electrónico.');
+          setMode('login');
+        }
+      } else {
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+        if (signInError) throw signInError;
+        if (data.user) {
+          setUser({
+            id: data.user.id,
+            name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'Usuario',
+            email: data.user.email,
+            avatar_url: data.user.user_metadata?.avatar_url,
+            location: 'Quito, Pichincha, Ecuador',
+          });
+        }
+      }
+    } catch (e: any) {
+      setError(e.message || 'No se pudo procesar el acceso');
     } finally {
       setLoading(false);
     }
