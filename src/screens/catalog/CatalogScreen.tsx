@@ -57,16 +57,18 @@ export default function CatalogScreen({ navigation }: Props) {
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Record<number, boolean>>({});
   const addItem = useCartStore((s) => s.addItem);
 
   const loadProducts = useCallback(async (search = '') => {
     try {
       setLoading(true);
+      setError(null);
       const data = search.trim() ? await searchProducts(search) : await fetchProducts();
       setProducts(data.map((p: any, i: number) => transformProduct(p, i)));
-    } catch (error) {
-      Alert.alert('Error', 'No se pudieron cargar los productos.');
+    } catch (err: any) {
+      setError(err.message || 'No se pudieron cargar los productos.');
     } finally {
       setLoading(false);
     }
@@ -125,6 +127,8 @@ export default function CatalogScreen({ navigation }: Props) {
 
         {loading ? (
           <LoadingState message="Cargando catálogo..." />
+        ) : error ? (
+          <ErrorState message={error} onRetry={() => loadProducts(query)} />
         ) : (
           <FlatList
             data={filtered}

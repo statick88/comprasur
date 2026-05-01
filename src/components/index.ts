@@ -10,4 +10,5 @@ export { default as ProfileCard } from './ProfileCard';
 export { default as EmptyState } from './EmptyState';
 export { default as LoadingState } from './LoadingState';
 export { default as SectionTitle } from './SectionTitle';
+export { default as ErrorState } from './ErrorState';
 
