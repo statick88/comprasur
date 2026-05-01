@@ -201,8 +201,61 @@ docker compose down -v
 
 ## 🛠️ Tecnologías
 
-**Frontend**: Expo SDK 53 · React Native 0.79 · React Navigation 7 · Zustand 5 · Supabase JS · TypeScript
+**Frontend**: Expo SDK 55 · React Native 0.85 · React Navigation 7 · Zustand 5 · Supabase JS · TypeScript
 
 **Backend**: Node.js 20 · Express 4 · PostgreSQL · Zod · PayPal SDK
 
 **DevOps**: Docker Compose · GitHub Actions (CI)
+
+---
+
+## 🚀 Despliegue a producción
+
+### Expo EAS (Frontend móvil)
+
+1. Instalar EAS CLI:
+   ```bash
+   npm install -g eas-cli
+   eas login
+   ```
+
+2. Configurar el proyecto:
+   ```bash
+   eas build:configure
+   ```
+
+3. Crear build de producción:
+   ```bash
+   # Android (APK o AAB)
+   eas build --platform android --profile production
+
+   # iOS (IPA)
+   eas build --platform ios --profile production
+   ```
+
+4. Publicar actualización OTA (Over-The-Air):
+   ```bash
+   eas update --branch production --message "Nueva versión"
+   ```
+
+5. Para enviar a las tiendas:
+   ```bash
+   eas submit --platform android
+   eas submit --platform ios
+   ```
+
+### Vercel (Backend API)
+
+1. Conectar repositorio en [vercel.com](https://vercel.com):
+   - Importar proyecto desde GitHub
+   - Configurar directorio raíz: `backend`
+
+2. Configurar variables de entorno en Vercel Dashboard:
+   - `DATABASE_URL` · `PAYPAL_CLIENT_ID` · `PAYPAL_CLIENT_SECRET` · `PAYPAL_ENVIRONMENT`
+
+3. Desplegar:
+   ```bash
+   vercel --prod
+   ```
+
+> ⚠️ **Nota**: El backend usa Docker Compose localmente, pero en Vercel se despliega como serverless functions. Ajusta la configuración en `vercel.json` si es necesario.
