@@ -1,0 +1,209 @@
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  SafeAreaView,
+  FlatList,
+  Dimensions,
+  Alert,
+} from 'react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Product, getProductImage } from '../../data/mockData';
+import { fetchProducts, searchProducts } from '../../data/api';
+import { useCartStore } from '../../store/useCartStore';
+import { RootStackParamList } from '../../types/navigation';
+import { theme } from '../../theme';
+import {
+  AppHeader,
+  CategoryChip,
+  EmptyState,
+  LoadingState,
+  ProductCard,
+  SectionTitle,
+} from '../../components';
+import { UICopy } from '../../../specs/ui-copy';
+
+const { width } = Dimensions.get('window');
+const CARD_GAP = 12;
+const CARD_WIDTH = (width - 48 - CARD_GAP) / 2;
+const CATEGORY_OPTIONS = ['Todos', 'Protección', 'Inyección', 'Quirúrgico', 'Curación', 'Hospitalario'];
+
+type Props = { navigation: NativeStackNavigationProp<RootStackParamList> };
+type CatalogProduct = Product & { category: string; stock: number };
+
+function transformProduct(apiProduct: any, index: number): CatalogProduct {
+  const fallbackCategories = ['Protección', 'Protección', 'Inyección', 'Quirúrgico', 'Curación', 'Hospitalario'];
+  return {
+    id: apiProduct.id,
+    name: apiProduct.name,
+    price: Number.parseFloat(apiProduct.price),
+    description: apiProduct.description,
+    imageKey: 'medical',
+    category: fallbackCategories[index % fallbackCategories.length],
+    stock: Math.max(20 - index * 2, 1),
+    colors: {
+      primary: '#0077B6',
+      background: '#CAF0F8',
+      text: '#03045E',
+      accent: '#90E0EF',
+    },
+  };
+}
+
+export default function CatalogScreen({ navigation }: Props) {
+  const [query, setQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const [products, setProducts] = useState<CatalogProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState<Record<number, boolean>>({});
+  const addItem = useCartStore((s) => s.addItem);
+
+  const loadProducts = useCallback(async (search = '') => {
+    try {
+      setLoading(true);
+      const data = search.trim() ? await searchProducts(search) : await fetchProducts();
+      setProducts(data.map((p: any, i: number) => transformProduct(p, i)));
+    } catch (error) {
+      Alert.alert('Error', 'No se pudieron cargar los productos.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  const filtered = useMemo(() => {
+    return products.filter((item) => {
+      const matchesCategory = selectedCategory === 'Todos' || item.category === selectedCategory;
+      return matchesCategory;
+    });
+  }, [products, selectedCategory]);
+
+  const handleSearch = async (text: string) => {
+    setQuery(text);
+    await loadProducts(text);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <AppHeader title="Catálogo" subtitle="Explora insumos médicos" />
+      <View style={styles.content}>
+        <SectionTitle title={UICopy.catalogTitle} subtitle="Rápido, claro y con stock visible." />
+        <View style={styles.searchBar}>
+          <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.textSecondary} />
+          <TextInput
+            style={styles.searchInput}
+            value={query}
+            onChangeText={handleSearch}
+            placeholder="Buscar producto..."
+            placeholderTextColor={theme.colors.textSecondary}
+            accessibilityLabel="Buscar producto"
+          />
+          {query ? (
+            <MaterialCommunityIcons
+              name="close-circle-outline"
+              size={18}
+              color={theme.colors.textSecondary}
+              onPress={() => handleSearch('')}
+            />
+          ) : null}
+        </View>
+        <FlatList
+          horizontal
+          data={CATEGORY_OPTIONS}
+          keyExtractor={(item) => item}
+          contentContainerStyle={styles.chips}
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <CategoryChip label={item} selected={item === selectedCategory} onPress={() => setSelectedCategory(item)} />
+          )}
+        />
+
+        {loading ? (
+          <LoadingState message="Cargando catálogo..." />
+        ) : (
+          <FlatList
+            data={filtered}
+            keyExtractor={(item) => item.id.toString()}
+            numColumns={2}
+            contentContainerStyle={styles.list}
+            columnWrapperStyle={styles.row}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+            <EmptyState
+                icon="medical-bag"
+                title="Sin resultados"
+                description="Prueba otra búsqueda o selecciona otra categoría."
+              />
+            }
+            renderItem={({ item }) => (
+              <View style={styles.cardWrap}>
+                <ProductCard
+                  image={getProductImage(item.id)}
+                  name={item.name}
+                  price={item.price}
+                  description={item.description}
+                  category={item.category}
+                  inStock={item.stock > 0}
+                  favorite={!!favorites[item.id]}
+                  onToggleFavorite={() =>
+                    setFavorites((prev) => ({ ...prev, [item.id]: !prev[item.id] }))
+                  }
+                  onQuickAction={() => addItem(item)}
+                  onPress={() => navigation.navigate('ProductInfo', { productId: item.id })}
+                />
+              </View>
+            )}
+          />
+        )}
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: theme.spacing.xl,
+    gap: theme.spacing.sm,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radius.md,
+    paddingHorizontal: theme.spacing.sm,
+    gap: theme.spacing.xs,
+  },
+  searchInput: {
+    flex: 1,
+    minHeight: theme.interaction.minTouchSize + 2,
+    color: theme.colors.textPrimary,
+    fontSize: theme.fontSizes.md,
+  },
+  chips: {
+    paddingVertical: theme.spacing.xs,
+    gap: theme.spacing.xs,
+  },
+  list: {
+    paddingBottom: 120,
+    paddingTop: theme.spacing.xs,
+  },
+  row: {
+    gap: CARD_GAP,
+    marginBottom: CARD_GAP,
+  },
+  cardWrap: {
+    width: CARD_WIDTH,
+  },
+});
