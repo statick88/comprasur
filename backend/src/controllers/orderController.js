@@ -232,3 +232,35 @@ export const capturePayPalOrder = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+/**
+ * Handle PayPal Webhooks to ensure order integrity even if client-side capture fails.
+ */
+export const handlePayPalWebhook = async (req, res) => {
+  const { event_type, resource } = req.body;
+
+  console.log(`[PayPal Webhook] Event: ${event_type}`);
+
+  try {
+    if (event_type === 'PAYMENT.CAPTURE.COMPLETED') {
+      const paypalOrderId = resource.supplementary_data?.related_ids?.order_id;
+      const captureId = resource.id;
+
+      if (paypalOrderId) {
+        const { rowCount } = await pool.query(
+          "UPDATE orders SET status = 'completed', paypal_capture_id = $1 WHERE paypal_order_id = $2 AND status != 'completed'",
+          [captureId, paypalOrderId]
+        );
+        
+        if (rowCount > 0) {
+          console.log(`[PayPal Webhook] Order updated via webhook: ${paypalOrderId}`);
+        }
+      }
+    }
+
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error(`[PayPal Webhook] Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
