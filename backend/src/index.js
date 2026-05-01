@@ -1,30 +1,30 @@
 // backend/src/index.js
 import express from 'express';
 import cors from 'cors';
-import pg from 'pg';
 import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 
-const { Pool } = pg;
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
+// CORS — allow only known origins (configure via CORS_ORIGINS env var)
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',')
+  : ['http://localhost:8081', 'http://localhost:19006', 'exp://localhost:8081'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());
-
-// Database connection for initialization
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-async function ensureOrderPaymentColumns() {
-  await pool.query(`
-    ALTER TABLE orders
-    ADD COLUMN IF NOT EXISTS paypal_order_id VARCHAR(255),
-    ADD COLUMN IF NOT EXISTS paypal_capture_id VARCHAR(255)
-  `);
-}
 
 // Health check
 app.get('/health', (req, res) => {
@@ -37,16 +37,9 @@ app.use('/api/orders', orderRoutes);
 
 // Start server
 if (process.env.NODE_ENV !== 'test') {
-  ensureOrderPaymentColumns()
-    .then(() => {
-      app.listen(PORT, () => {
-        console.log(`🩺 Comprasur API running on port ${PORT}`);
-      });
-    })
-    .catch((error) => {
-      console.error('❌ Failed to prepare database schema:', error.message);
-      process.exit(1);
-    });
+  app.listen(PORT, () => {
+    console.log(`🩺 Comprasur API running on port ${PORT}`);
+  });
 }
 
 export default app;

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   TextInput,
@@ -16,43 +16,27 @@ import { useChatStore, Message } from '../../store/useChatStore';
 import { theme } from '../../theme';
 import { AppHeader, EmptyState, MessageBubble } from '../../components';
 
-const BOT_RESPONSES = [
-  'Gracias por escribir. ¿Te apoyo con un producto específico?',
-  'Perfecto, reviso disponibilidad para ti.',
-  'Sí, tenemos stock en ese insumo.',
-  '¿Deseas ayuda para finalizar la compra?',
-];
-
-function getBotResponse() {
-  return BOT_RESPONSES[Math.floor(Math.random() * BOT_RESPONSES.length)];
-}
-
 export default function ChatScreen() {
-  const { messages, sendMessage, addBotResponse } = useChatStore();
+  const { messages, sendMessage, initRealtime } = useChatStore();
   const [input, setInput] = useState('');
-  const [isSyncing, setIsSyncing] = useState(false);
   const flatListRef = useRef<FlatList<Message>>(null);
+
+  useEffect(() => {
+    return initRealtime();
+  }, []);
 
   const handleSend = (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed) {
-      return;
-    }
+    if (!trimmed) return;
     sendMessage(trimmed);
     setInput('');
-    setIsSyncing(true);
-    setTimeout(() => {
-      addBotResponse(getBotResponse());
-      setIsSyncing(false);
-    }, 1200);
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <AppHeader
         title="Chat"
-        subtitle={isSyncing ? 'Asistente escribiendo...' : 'Soporte en línea'}
-        rightAction={isSyncing ? <ActivityIndicator size="small" color={theme.colors.blue} /> : undefined}
+        subtitle="Soporte en línea"
       />
       <KeyboardAvoidingView
         style={styles.flex}
@@ -93,7 +77,7 @@ export default function ChatScreen() {
         </View>
         <View style={styles.syncRow}>
           <MaterialCommunityIcons name="sync" size={14} color={theme.colors.textSecondary} />
-          <Text style={styles.syncText}>Actualización en tiempo real activa</Text>
+          <Text style={styles.syncText}>Supabase Realtime activo</Text>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -101,13 +85,8 @@ export default function ChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  flex: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  flex: { flex: 1 },
   list: {
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
@@ -152,4 +131,3 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
 });
-

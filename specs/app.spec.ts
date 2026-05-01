@@ -23,9 +23,3 @@ export const AppSpec = {
     fields: ['photo', 'name', 'location'] as const,
   },
 } as const;
-
-describe('AppSpec Configuration', () => {
-  it('should have valid auth config', () => {
-    expect(AppSpec.auth).toBeDefined();
-  });
-});

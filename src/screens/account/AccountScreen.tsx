@@ -124,22 +124,23 @@ export default function AccountScreen() {
 
         <View style={styles.options}>
           <SectionTitle title="Opciones" subtitle="Configuración y soporte" />
-          <View style={styles.optionRow}>
-            <MaterialCommunityIcons name="package-variant-closed" size={20} color={theme.colors.blue} />
-            <Text style={styles.optionText}>Pedidos</Text>
-          </View>
-          <View style={styles.optionRow}>
-            <MaterialCommunityIcons name="map-marker-outline" size={20} color={theme.colors.blue} />
-            <Text style={styles.optionText}>Direcciones</Text>
-          </View>
-          <View style={styles.optionRow}>
-            <MaterialCommunityIcons name="credit-card-outline" size={20} color={theme.colors.blue} />
-            <Text style={styles.optionText}>Métodos de pago</Text>
-          </View>
-          <View style={styles.optionRow}>
-            <MaterialCommunityIcons name="help-circle-outline" size={20} color={theme.colors.blue} />
-            <Text style={styles.optionText}>Soporte</Text>
-          </View>
+          {[
+            { icon: 'package-variant-closed', label: 'Pedidos' },
+            { icon: 'map-marker-outline', label: 'Direcciones' },
+            { icon: 'credit-card-outline', label: 'Métodos de pago' },
+            { icon: 'help-circle-outline', label: 'Soporte' },
+          ].map(({ icon, label }) => (
+            <Pressable
+              key={label}
+              style={styles.optionRow}
+              onPress={() => Alert.alert('Próximamente', `${label} estará disponible pronto.`)}
+              accessibilityRole="button"
+            >
+              <MaterialCommunityIcons name={icon as any} size={20} color={theme.colors.blue} />
+              <Text style={styles.optionText}>{label}</Text>
+              <MaterialCommunityIcons name="chevron-right" size={18} color={theme.colors.textSecondary} style={styles.chevron} />
+            </Pressable>
+          ))}
         </View>
 
         <SecondaryButton title="Cerrar sesión" icon="logout" onPress={handleLogout} />
@@ -196,8 +197,12 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.xs,
   },
   optionText: {
+    flex: 1,
     fontSize: theme.fontSizes.sm,
     color: theme.colors.textPrimary,
     fontWeight: '600',
+  },
+  chevron: {
+    marginLeft: 'auto' as any,
   },
 });
