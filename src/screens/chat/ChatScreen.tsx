@@ -7,7 +7,6 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   Text,
   Pressable,
 } from 'react-native';
@@ -17,7 +16,7 @@ import { theme } from '../../theme';
 import { AppHeader, EmptyState, MessageBubble } from '../../components';
 
 export default function ChatScreen() {
-  const { messages, sendMessage, initRealtime } = useChatStore();
+  const { messages, sendMessage, initRealtime, clearMessages } = useChatStore();
   const [input, setInput] = useState('');
   const flatListRef = useRef<FlatList<Message>>(null);
 
@@ -42,6 +41,17 @@ export default function ChatScreen() {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={90}>
+        <View style={styles.infoCard}>
+          <View style={styles.infoContent}>
+            <MaterialCommunityIcons name="headset" size={18} color={theme.colors.blueDeep} />
+            <Text style={styles.infoText}>
+              Demo de soporte: responde automáticamente y sigue siendo compatible con mensajes en tiempo real.
+            </Text>
+          </View>
+          <Pressable onPress={clearMessages} accessibilityRole="button">
+            <Text style={styles.clearText}>Reiniciar</Text>
+          </Pressable>
+        </View>
         <FlatList
           ref={flatListRef}
           data={messages}
@@ -87,6 +97,37 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   flex: { flex: 1 },
+  infoCard: {
+    marginHorizontal: theme.spacing.md,
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.cyanSoft,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  infoContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: theme.spacing.xs,
+  },
+  infoText: {
+    flex: 1,
+    color: theme.colors.blueDeep,
+    fontSize: theme.fontSizes.xs,
+    lineHeight: 16,
+  },
+  clearText: {
+    color: theme.colors.blueDeep,
+    fontSize: theme.fontSizes.xs,
+    fontWeight: '700',
+  },
   list: {
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
